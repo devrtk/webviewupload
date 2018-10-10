@@ -9,14 +9,14 @@ This application has been tested on API Level 19.
 
 - res/xml/image_path.xml (for FileProvider)
 - For AndroidManifest.xml, additional permissions added:
-
+```xml
 <uses-feature android:name="android.hardware.camera" android:required="false" />
 <uses-feature
     android:name="android.hardware.camera.any"
     android:required="true" />
 <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 <uses-permission android:name="android.permission.CAMERA" />
-
+```
 ## Application Functions
 
 - Take Photo - takes a photo using the camera and stores the file temporarily within the internal storage (tempimage/temp.jpg).
