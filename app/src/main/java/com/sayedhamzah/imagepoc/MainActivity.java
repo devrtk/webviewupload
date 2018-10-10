@@ -2,6 +2,7 @@ package com.sayedhamzah.imagepoc;
 
 import android.app.Activity;
 import android.content.ClipData;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -15,9 +16,11 @@ import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.InputStream;
 
 public class MainActivity extends AppCompatActivity {
@@ -54,7 +57,7 @@ public class MainActivity extends AppCompatActivity {
             if (resultCode == Activity.RESULT_OK) {
                 File path = new File(getApplicationContext().getFilesDir(), "tempimage/");
                 if (!path.exists()) path.mkdirs();
-                File imageFile = new File(path, "image.jpg");
+                File imageFile = new File(path, "temp.jpg");
                 uploadedImage = Uri.fromFile(imageFile);
             }
         }
@@ -73,18 +76,32 @@ public class MainActivity extends AppCompatActivity {
     private View.OnClickListener uploadimage = new View.OnClickListener() {
         public void onClick(View v) {
 
-
-
+            FileOutputStream outputStream;
             try{
-                final InputStream imageStream = getContentResolver().openInputStream(uploadedImage);
-                final Bitmap selectedImage = BitmapFactory.decodeStream(imageStream);
+                Bitmap selectedImage = MediaStore.Images.Media.getBitmap(getContentResolver(),uploadedImage);
                 String encodedImage = encodeImage(selectedImage);
-                //print out the image data in base64 format in logcat
-                Log.d("Uploaded Image",encodedImage);
+
+                //write encoded image data into directory
+                String filename = "imageb64.txt";
+                String fileContents = "Hello world!";
+
+                try {
+                    outputStream = openFileOutput(filename, Context.MODE_PRIVATE);
+                    outputStream.write(fileContents.getBytes());
+                    outputStream.close();
+
+                    Toast.makeText(getApplicationContext(),"Uploaded successfully in internal storage directory /data/data/com.sayedhamzah.imagepoc/files/imageb64.txt",Toast.LENGTH_LONG).show();
+
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
 
                 //delete the temporary image from the internal storage
-                File path = new File(getApplicationContext().getFilesDir(), "tempimage/image.jpg");
+                File path = new File(getApplicationContext().getFilesDir(), "tempimage/temp.jpg");
                 path.delete();
+                Toast.makeText(getApplicationContext(),"Deleted temporarily captured image",Toast.LENGTH_LONG).show();
 
             }catch (Exception e) {}
 
@@ -100,7 +117,7 @@ public class MainActivity extends AppCompatActivity {
                 path.mkdirs();
             }
 
-            File image = new File(path, "image.jpg");
+            File image = new File(path, "temp.jpg");
             Uri imageUri = FileProvider.getUriForFile(getApplicationContext(), CAPTURE_IMAGE_FILE_PROVIDER, image);
             Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
             intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
@@ -133,7 +150,7 @@ public class MainActivity extends AppCompatActivity {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         bm.compress(Bitmap.CompressFormat.JPEG,100,baos);
         byte[] b = baos.toByteArray();
-        String encImage = Base64.encodeToString(b, Base64.DEFAULT);
+        String encImage = Base64.encodeToString(b,Base64.DEFAULT);
 
         return encImage;
     }
