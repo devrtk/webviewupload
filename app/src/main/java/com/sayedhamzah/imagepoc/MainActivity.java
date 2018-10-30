@@ -90,7 +90,7 @@ public class MainActivity extends AppCompatActivity {
         webSettings.setAllowFileAccess(true);
 
 
-        webViewContent.loadUrl("https://imgur.com/upload");
+        webViewContent.loadUrl("https://en.imgbb.com/");
 
 
         webViewContent.setWebViewClient(new WebViewClient() {
@@ -213,6 +213,7 @@ public class MainActivity extends AppCompatActivity {
                     if(takePictureIntent.resolveActivity(getPackageManager()) != null){
                         File photoFile = null;
                         try{
+                            //TODO step 2
                             photoFile = createImageFile();
                             takePictureIntent.putExtra("PhotoPath", mCM);
                         }catch(IOException ex){
@@ -220,7 +221,18 @@ public class MainActivity extends AppCompatActivity {
                         }
                         if(photoFile != null){
                          //   mCM = "file:" + photoFile.getAbsolutePath();
-                            takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(photoFile));
+
+                            //TODO step 3
+                            Uri imageUri = FileProvider.getUriForFile(getApplicationContext(), CAPTURE_IMAGE_FILE_PROVIDER, photoFile);
+                            takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
+
+                            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP) {
+                                takePictureIntent.setClipData(ClipData.newRawUri("", imageUri));
+                                takePictureIntent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION|Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                            }
+
+
+
                         }else{
                             takePictureIntent = null;
                         }
@@ -258,21 +270,19 @@ public class MainActivity extends AppCompatActivity {
 
 
                     //TODO It cause this intent not working without Write Permission
-/*
 
                     Intent chooserIntent = new Intent(Intent.ACTION_CHOOSER);
                     chooserIntent.putExtra(Intent.EXTRA_INTENT, contentSelectionIntent);
                     chooserIntent.putExtra(Intent.EXTRA_TITLE, "File Chooser");
                     chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, intentArray0);
                     startActivityForResult(chooserIntent, RESULT_GALLERY);
-*/
 
 
                     //TODO Testing
-                    Intent galleryIntent = new Intent(
-                            Intent.ACTION_PICK,
-                            android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                    startActivityForResult(galleryIntent , RESULT_GALLERY );
+//                    Intent galleryIntent = new Intent(
+//                            Intent.ACTION_PICK,
+//                            android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+//                    startActivityForResult(galleryIntent , RESULT_GALLERY );
 
 
                     return true;
@@ -325,10 +335,21 @@ public class MainActivity extends AppCompatActivity {
 
     // Create an image file
     private File createImageFile() throws IOException {
-        @SuppressLint("SimpleDateFormat") String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        String imageFileName = "img_"+timeStamp+"_";
-        File storageDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
-        return File.createTempFile(imageFileName,".jpg",storageDir);
+//        Log.e("rtk", "Hello World");
+//        @SuppressLint("SimpleDateFormat") String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+//        String imageFileName = "img_"+timeStamp+"_";
+//        File storageDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+//        return File.createTempFile(imageFileName,".jpg",storageDir);
+
+        //TODO step 1
+        File path = new File(getApplicationContext().getFilesDir(), "tempimage/");
+        if (!path.exists())
+        {
+            path.mkdirs();
+        }
+
+        File image = new File(path, "temp.jpg");
+        return image;
     }
 
 
